@@ -26,9 +26,9 @@ const missionRows = [
 
 const metrics = [
   { label: "Runtime", value: "OpenClaw" },
-  { label: "Primary", value: "GPT-4o" },
-  { label: "QA Layer", value: "Jarvis" },
-  { label: "Channels", value: "6" },
+  { label: "Powered By", value: "OpenClaw" },
+  { label: "Core", value: "Armetius" },
+  { label: "License", value: "MIT" },
 ];
 
 function CoreOrb() {
@@ -88,6 +88,17 @@ export default function Home() {
               <strong>{metric.value}</strong>
             </div>
           ))}
+          <div className="openclaw-mark">
+            <div className="openclaw-logo" aria-hidden>
+              <span />
+              <span />
+              <span />
+            </div>
+            <div>
+              <span>Runtime</span>
+              <strong>OpenClaw</strong>
+            </div>
+          </div>
         </div>
 
         <div className="topbar-actions">
@@ -109,7 +120,7 @@ export default function Home() {
             </h1>
 
             <p className="hero-text">
-              Describe the mission in plain English. Jarvis supervises execution, routing,
+              Describe the mission in plain English. Armetius supervises execution,
               delivery, and cost control while your agent runs through a premium command layer.
             </p>
 
@@ -119,7 +130,7 @@ export default function Home() {
             </div>
 
             <div className="hero-microcopy">
-              <span>Jarvis-supervised execution</span>
+              <span>Armetius-supervised execution</span>
               <span>Cost-aware orchestration</span>
               <span>Multi-channel delivery</span>
             </div>
@@ -128,14 +139,14 @@ export default function Home() {
           <div className="hero-visual-wrap">
             <div className="visual-frame">
               <div className="visual-frame-top">
-                <span>JARVIS CORE</span>
+                <span>ARMETIUS CORE</span>
                 <span>RUNTIME ONLINE</span>
               </div>
               <CoreOrb />
               <div className="visual-readouts visual-readout-left">
-                <label>MODEL ROUTING</label>
-                <strong>GPT-4o → VERIFIED</strong>
-                <small>Fallback, cost, and output supervision active</small>
+                <label>POWERED BY</label>
+                <strong>OPENCLAW RUNTIME</strong>
+                <small>Armetius supervises execution, delivery, and cost control.</small>
               </div>
               <div className="visual-readouts visual-readout-right">
                 <label>CHANNEL GRID</label>
@@ -216,8 +227,8 @@ export default function Home() {
       </section>
 
       <footer className="footer-bar">
-        <div className="footer-pill">Powered by OpenClaw Runtime</div>
-        <div className="footer-text">AI PAD · JARVIS SUPERVISED AGENT EXECUTION</div>
+        <div className="footer-pill">Powered by OpenClaw Runtime · MIT Licensed</div>
+        <div className="footer-text">AI PAD · ARMETIUS SUPERVISED AGENT EXECUTION</div>
       </footer>
     </main>
   );
