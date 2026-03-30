@@ -1,4 +1,5 @@
 import { CreateAgentForm } from "@/components/agents/create-agent-form";
+import { isSupabaseConfigured } from "@/lib/db/server";
 
 async function getAgentDrafts() {
   try {
@@ -20,6 +21,7 @@ async function getAgentDrafts() {
 
 export default async function Home() {
   const agents = await getAgentDrafts();
+  const supabaseReady = isSupabaseConfigured();
 
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100">
@@ -45,6 +47,13 @@ export default async function Home() {
                 Draft count
               </p>
               <p className="mt-2 text-4xl font-semibold">{agents.length}</p>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+              <p className="font-medium">Storage mode</p>
+              <p className="mt-2 text-sm text-zinc-300">
+                {supabaseReady ? "Supabase configured" : "Local JSON fallback"}
+              </p>
             </div>
 
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
