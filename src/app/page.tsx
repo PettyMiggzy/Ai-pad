@@ -38,8 +38,8 @@ export default async function Home() {
           </h1>
           <p className="max-w-3xl text-lg text-zinc-300">
             The first browser-side flow is live. You can now create Artemis drafts,
-            price them, and provision runtime sessions while we keep building the
-            full hosted agent platform.
+            price them, provision runtime sessions, and manage lifecycle controls
+            while we keep building the full hosted agent platform.
           </p>
         </div>
 
@@ -94,6 +94,10 @@ export default async function Home() {
               <code className="mt-1 block text-sm text-zinc-300">POST /api/agents</code>
               <code className="mt-1 block text-sm text-zinc-300">POST /api/billing/checkout</code>
               <code className="mt-1 block text-sm text-zinc-300">POST /api/runtime/provision</code>
+              <code className="mt-1 block text-sm text-zinc-300">POST /api/runtime/message</code>
+              <code className="mt-1 block text-sm text-zinc-300">POST /api/runtime/status</code>
+              <code className="mt-1 block text-sm text-zinc-300">POST /api/runtime/pause</code>
+              <code className="mt-1 block text-sm text-zinc-300">POST /api/runtime/resume</code>
             </div>
           </div>
         </div>
