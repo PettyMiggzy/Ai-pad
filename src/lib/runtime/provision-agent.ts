@@ -3,6 +3,7 @@ import {
   buildArtemisRuntimeConfig,
   type ArtemisRuntimeConfig,
 } from "@/lib/runtime/build-config";
+import { callOpenClawGateway } from "@/lib/runtime/openclaw-gateway";
 
 export interface ProvisionAgentResult {
   ok: true;
@@ -37,12 +38,26 @@ export async function provisionAgentRuntime(agentId: string): Promise<ProvisionA
     };
   }
 
+  const created = await callOpenClawGateway<{
+    key: string;
+    sessionId: string;
+  }>({
+    method: "sessions.create",
+    params: {
+      key: `agent:artemis:${agentId}`,
+      agentId: "main",
+      label: runtime.sessionLabel,
+      model: runtime.model,
+      message: runtime.initialMessage,
+    },
+  });
+
   return {
     ok: true,
     mode: "openclaw",
     agentId,
     runtime,
-    sessionKey: `openclaw:${agentId}`,
-    sessionId: `openclaw-session-${agentId}`,
+    sessionKey: created.key,
+    sessionId: created.sessionId,
   };
 }

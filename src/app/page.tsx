@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { CreateAgentForm } from "@/components/agents/create-agent-form";
 import { isStripeConfigured } from "@/lib/billing/stripe";
 import { isSupabaseConfigured } from "@/lib/db/server";
@@ -24,6 +26,7 @@ export default async function Home() {
   const agents = await getAgentDrafts();
   const supabaseReady = isSupabaseConfigured();
   const stripeReady = isStripeConfigured();
+  const openClawReady = Boolean(process.env.OPENCLAW_GATEWAY_URL);
 
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100">
@@ -35,8 +38,8 @@ export default async function Home() {
           </h1>
           <p className="max-w-3xl text-lg text-zinc-300">
             The first browser-side flow is live. You can now create Artemis drafts,
-            price them, and prep checkout while we keep building persistence,
-            billing, and OpenClaw provisioning.
+            price them, and provision runtime sessions while we keep building the
+            full hosted agent platform.
           </p>
         </div>
 
@@ -66,10 +69,30 @@ export default async function Home() {
             </div>
 
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+              <p className="font-medium">Runtime mode</p>
+              <p className="mt-2 text-sm text-zinc-300">
+                {openClawReady ? "OpenClaw gateway connected" : "Mock provisioning mode"}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+              <p className="font-medium">Quick links</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link
+                  href="/dashboard"
+                  className="rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-200 transition hover:bg-zinc-800"
+                >
+                  Dashboard
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
               <p className="font-medium">API routes</p>
               <code className="mt-2 block text-sm text-zinc-300">GET /api/agents</code>
               <code className="mt-1 block text-sm text-zinc-300">POST /api/agents</code>
               <code className="mt-1 block text-sm text-zinc-300">POST /api/billing/checkout</code>
+              <code className="mt-1 block text-sm text-zinc-300">POST /api/runtime/provision</code>
             </div>
           </div>
         </div>
