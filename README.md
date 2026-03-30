@@ -9,6 +9,17 @@ AI Pad is a hosted agent platform project built around Artemis as the default Ti
 - Local draft persistence added
 - Browser UI for creating drafts added
 - Supabase-ready database layer added with local JSON fallback
+- Stripe checkout skeleton added
+- OpenClaw runtime provisioning skeleton added
+
+## Runtime direction
+
+AI Pad is being aimed at a self-hosted/open-model stack.
+The current Artemis runtime profile is:
+
+- `artemis-tier1`
+
+That profile should resolve to your self-hosted open-source inference backend, not a paid hosted GPT endpoint.
 
 ## Environment
 
@@ -36,3 +47,5 @@ npm run dev
 
 - `GET /api/agents`
 - `POST /api/agents`
+- `POST /api/billing/checkout`
+- `POST /api/runtime/provision`

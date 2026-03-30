@@ -18,7 +18,7 @@ export function buildArtemisRuntimeConfig(agent: StoredAgentDraft): ArtemisRunti
   return {
     agentId: agent.id,
     sessionLabel: `${agent.name} runtime`,
-    model: "GPT",
+    model: "artemis-tier1",
     initialMessage: `You are now booting as ${agent.name}. Your purpose is: ${agent.purpose}`,
     tools: agent.tools,
     metadata: {

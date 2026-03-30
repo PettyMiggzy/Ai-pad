@@ -73,6 +73,7 @@ export default async function Home() {
               <p className="mt-2 text-sm text-zinc-300">
                 {openClawReady ? "OpenClaw gateway connected" : "Mock provisioning mode"}
               </p>
+              <p className="mt-2 text-xs text-zinc-500">Runtime profile: artemis-tier1</p>
             </div>
 
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
