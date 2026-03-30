@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { RuntimeStatusCard } from "@/components/agents/runtime-status-card";
 import { getAgentDraftById } from "@/lib/db/agents";
 
 export default async function AgentDetailPage({
@@ -48,13 +49,7 @@ export default async function AgentDetailPage({
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <h2 className="text-lg font-semibold">Runtime</h2>
-            <ul className="mt-3 space-y-2 text-sm text-zinc-300">
-              <li>Session key: {agent.runtimeSessionKey ?? "Not provisioned yet"}</li>
-              <li>Session id: {agent.runtimeSessionId ?? "Not provisioned yet"}</li>
-            </ul>
-          </section>
+          <RuntimeStatusCard agentId={agent.id} sessionKey={agent.runtimeSessionKey} />
 
           <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
             <h2 className="text-lg font-semibold">Persona</h2>
