@@ -79,6 +79,11 @@ async function listAgentDraftsFile() {
   return readAgentsFile();
 }
 
+async function getAgentDraftByIdFile(id: string) {
+  const agents = await readAgentsFile();
+  return agents.find((agent) => agent.id === id) ?? null;
+}
+
 async function createAgentDraftSupabase(
   input: CreateAgentInput & { systemPrompt: string },
 ) {
@@ -172,6 +177,48 @@ async function listAgentDraftsSupabase() {
   }));
 }
 
+async function getAgentDraftByIdSupabase(id: string) {
+  const supabase = getSupabaseAdminClient();
+
+  const { data, error } = await supabase
+    .from("agents")
+    .select(
+      "id, name, purpose, description, persona, system_prompt, communication_channels, allowed_tools, knowledge_config, memory_policy, status, created_at",
+    )
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) return null;
+
+  return {
+    id: data.id,
+    name: data.name,
+    templateName: "artemis" as const,
+    purpose: data.purpose,
+    description: data.description ?? undefined,
+    persona: (data.persona ?? {}) as CreateAgentInput["persona"],
+    channels: (data.communication_channels ?? []) as CreateAgentInput["channels"],
+    tools: (data.allowed_tools ?? []) as string[],
+    knowledge: (data.knowledge_config ?? { urls: [], notes: [] }) as CreateAgentInput["knowledge"],
+    memory: (data.memory_policy ?? {
+      mode: "explicit_only",
+      allowGroupMemory: false,
+    }) as CreateAgentInput["memory"],
+    billing: {
+      plan: "tier1",
+      initialBucketTopupCents: 0,
+      pauseOnZeroBalance: true,
+    },
+    systemPrompt: data.system_prompt,
+    status: (data.status ?? "draft") as "draft",
+    createdAt: data.created_at,
+  };
+}
+
 export async function createAgentDraft(
   input: CreateAgentInput & { systemPrompt: string },
 ) {
@@ -188,4 +235,12 @@ export async function listAgentDrafts() {
   }
 
   return listAgentDraftsFile();
+}
+
+export async function getAgentDraftById(id: string) {
+  if (isSupabaseConfigured()) {
+    return getAgentDraftByIdSupabase(id);
+  }
+
+  return getAgentDraftByIdFile(id);
 }
