@@ -1,7 +1,18 @@
 import { NextResponse } from "next/server";
 
+import { createAgentDraft, listAgentDrafts } from "@/lib/db/agents";
 import { buildArtemisPrompt } from "@/lib/prompts/artemis";
 import { createAgentSchema } from "@/lib/validation/agent";
+
+export async function GET() {
+  const agents = await listAgentDrafts();
+
+  return NextResponse.json({
+    ok: true,
+    count: agents.length,
+    agents,
+  });
+}
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -23,14 +34,14 @@ export async function POST(req: Request) {
     style: data.persona.style,
   });
 
+  const draft = await createAgentDraft({
+    ...data,
+    systemPrompt,
+  });
+
   return NextResponse.json({
     ok: true,
-    message: "Agent draft validated",
-    agent: {
-      name: data.name,
-      template: "artemis",
-      systemPrompt,
-      status: "draft",
-    },
+    message: "Agent draft created",
+    agent: draft,
   });
 }
