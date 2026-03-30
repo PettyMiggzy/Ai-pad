@@ -30,6 +30,18 @@ type CheckoutResponse = {
   };
 };
 
+type ProvisionResponse = {
+  ok?: boolean;
+  mode?: "mock" | "openclaw";
+  agentId?: string;
+  sessionKey?: string;
+  sessionId?: string;
+  runtime?: {
+    sessionLabel: string;
+    model: string;
+  };
+};
+
 const initialState = {
   name: "Artemis",
   purpose: "Help manage my messages and answer common questions",
@@ -47,12 +59,14 @@ export function CreateAgentForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CreateAgentResponse | null>(null);
   const [checkout, setCheckout] = useState<CheckoutResponse | null>(null);
+  const [provision, setProvision] = useState<ProvisionResponse | null>(null);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setResult(null);
     setCheckout(null);
+    setProvision(null);
 
     try {
       const res = await fetch("/api/agents", {
@@ -110,6 +124,19 @@ export function CreateAgentForm() {
 
         const checkoutData = (await checkoutRes.json()) as CheckoutResponse;
         setCheckout(checkoutData);
+
+        const provisionRes = await fetch("/api/runtime/provision", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            agentId: data.agent.id,
+          }),
+        });
+
+        const provisionData = (await provisionRes.json()) as ProvisionResponse;
+        setProvision(provisionData);
 
         setForm(initialState);
       }
@@ -269,6 +296,18 @@ export function CreateAgentForm() {
               Stripe isn&apos;t configured yet, so this is running in mock checkout mode.
             </p>
           )}
+        </div>
+      ) : null}
+
+      {provision?.ok ? (
+        <div className="rounded-xl border border-sky-900 bg-sky-950/40 p-4 text-sm text-sky-300">
+          <p className="font-medium text-sky-100">Runtime provisioning</p>
+          <p className="mt-2">Mode: {provision.mode}</p>
+          <p>Session key: {provision.sessionKey}</p>
+          <p>Session id: {provision.sessionId}</p>
+          <p className="mt-2 text-sky-200">
+            Runtime label: {provision.runtime?.sessionLabel} · Model: {provision.runtime?.model}
+          </p>
         </div>
       ) : null}
     </form>
