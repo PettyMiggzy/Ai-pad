@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { RuntimeStatusCard } from "@/components/agents/runtime-status-card";
 import { getAgentDraftById } from "@/lib/db/agents";
+import { listRunsForAgent } from "@/lib/db/runs";
 
 export default async function AgentDetailPage({
   params,
@@ -16,9 +17,11 @@ export default async function AgentDetailPage({
     notFound();
   }
 
+  const runs = await listRunsForAgent(agent.id);
+
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100">
-      <div className="mx-auto max-w-4xl space-y-8">
+      <div className="mx-auto max-w-5xl space-y-8">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm uppercase tracking-[0.3em] text-zinc-400">Agent detail</p>
@@ -33,7 +36,7 @@ export default async function AgentDetailPage({
           </Link>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
             <p className="text-sm uppercase tracking-[0.2em] text-zinc-500">Status</p>
             <p className="mt-2 text-2xl font-semibold">{agent.status}</p>
@@ -45,6 +48,10 @@ export default async function AgentDetailPage({
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
             <p className="text-sm uppercase tracking-[0.2em] text-zinc-500">Created</p>
             <p className="mt-2 text-sm text-zinc-300">{agent.createdAt}</p>
+          </div>
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+            <p className="text-sm uppercase tracking-[0.2em] text-zinc-500">Runs</p>
+            <p className="mt-2 text-2xl font-semibold">{runs.length}</p>
           </div>
         </div>
 
@@ -82,14 +89,20 @@ export default async function AgentDetailPage({
           </section>
 
           <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <h2 className="text-lg font-semibold">Tools</h2>
-            <ul className="mt-3 space-y-2 text-sm text-zinc-300">
-              {agent.tools.length === 0 ? (
-                <li>No tools enabled</li>
+            <h2 className="text-lg font-semibold">Recent runs</h2>
+            <div className="mt-3 space-y-2 text-sm text-zinc-300">
+              {runs.length === 0 ? (
+                <p>No runs yet.</p>
               ) : (
-                agent.tools.map((tool) => <li key={tool}>{tool}</li>)
+                runs.slice(0, 5).map((run) => (
+                  <div key={run.id} className="rounded-xl border border-zinc-800 p-3">
+                    <p>{run.triggerType}</p>
+                    <p className="text-zinc-400">{run.status}</p>
+                    <p className="text-zinc-500">${(run.costCents / 100).toFixed(2)}</p>
+                  </div>
+                ))
               )}
-            </ul>
+            </div>
           </section>
         </div>
 
