@@ -1,4 +1,4 @@
-import { getAgentDraftById } from "@/lib/db/agents";
+import { attachRuntimeToAgent, getAgentDraftById } from "@/lib/db/agents";
 import {
   buildArtemisRuntimeConfig,
   type ArtemisRuntimeConfig,
@@ -28,7 +28,7 @@ export async function provisionAgentRuntime(agentId: string): Promise<ProvisionA
   const runtime = buildArtemisRuntimeConfig(agent);
 
   if (!isOpenClawProvisioningConfigured()) {
-    return {
+    const mockResult: ProvisionAgentResult = {
       ok: true,
       mode: "mock",
       agentId,
@@ -36,6 +36,14 @@ export async function provisionAgentRuntime(agentId: string): Promise<ProvisionA
       sessionKey: `mock:${agentId}`,
       sessionId: `mock-session-${agentId}`,
     };
+
+    await attachRuntimeToAgent({
+      agentId,
+      sessionKey: mockResult.sessionKey,
+      sessionId: mockResult.sessionId,
+    });
+
+    return mockResult;
   }
 
   const created = await callOpenClawGateway<{
@@ -50,6 +58,12 @@ export async function provisionAgentRuntime(agentId: string): Promise<ProvisionA
       model: runtime.model,
       message: runtime.initialMessage,
     },
+  });
+
+  await attachRuntimeToAgent({
+    agentId,
+    sessionKey: created.key,
+    sessionId: created.sessionId,
   });
 
   return {

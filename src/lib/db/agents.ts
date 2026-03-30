@@ -23,8 +23,10 @@ export interface StoredAgentDraft {
   memory: CreateAgentInput["memory"];
   billing: CreateAgentInput["billing"];
   systemPrompt: string;
-  status: "draft";
+  status: "draft" | "active";
   createdAt: string;
+  runtimeSessionKey?: string;
+  runtimeSessionId?: string;
 }
 
 async function ensureStore() {
@@ -82,6 +84,29 @@ async function listAgentDraftsFile() {
 async function getAgentDraftByIdFile(id: string) {
   const agents = await readAgentsFile();
   return agents.find((agent) => agent.id === id) ?? null;
+}
+
+async function attachRuntimeToAgentFile(params: {
+  agentId: string;
+  sessionKey: string;
+  sessionId: string;
+}) {
+  const agents = await readAgentsFile();
+  const index = agents.findIndex((agent) => agent.id === params.agentId);
+
+  if (index === -1) {
+    throw new Error("Agent not found");
+  }
+
+  agents[index] = {
+    ...agents[index],
+    status: "active",
+    runtimeSessionKey: params.sessionKey,
+    runtimeSessionId: params.sessionId,
+  };
+
+  await writeAgentsFile(agents);
+  return agents[index];
 }
 
 async function createAgentDraftSupabase(
@@ -143,7 +168,7 @@ async function listAgentDraftsSupabase() {
   const { data, error } = await supabase
     .from("agents")
     .select(
-      "id, name, purpose, description, persona, system_prompt, communication_channels, allowed_tools, knowledge_config, memory_policy, status, created_at",
+      "id, name, purpose, description, persona, system_prompt, communication_channels, allowed_tools, knowledge_config, memory_policy, status, created_at, runtime_session_key",
     )
     .eq("template_name", "artemis")
     .order("created_at", { ascending: false });
@@ -172,8 +197,9 @@ async function listAgentDraftsSupabase() {
       pauseOnZeroBalance: true,
     },
     systemPrompt: row.system_prompt,
-    status: (row.status ?? "draft") as "draft",
+    status: (row.status ?? "draft") as "draft" | "active",
     createdAt: row.created_at,
+    runtimeSessionKey: row.runtime_session_key ?? undefined,
   }));
 }
 
@@ -183,7 +209,7 @@ async function getAgentDraftByIdSupabase(id: string) {
   const { data, error } = await supabase
     .from("agents")
     .select(
-      "id, name, purpose, description, persona, system_prompt, communication_channels, allowed_tools, knowledge_config, memory_policy, status, created_at",
+      "id, name, purpose, description, persona, system_prompt, communication_channels, allowed_tools, knowledge_config, memory_policy, status, created_at, runtime_session_key, runtime_session_id",
     )
     .eq("id", id)
     .maybeSingle();
@@ -214,9 +240,35 @@ async function getAgentDraftByIdSupabase(id: string) {
       pauseOnZeroBalance: true,
     },
     systemPrompt: data.system_prompt,
-    status: (data.status ?? "draft") as "draft",
+    status: (data.status ?? "draft") as "draft" | "active",
     createdAt: data.created_at,
+    runtimeSessionKey: data.runtime_session_key ?? undefined,
+    runtimeSessionId: data.runtime_session_id ?? undefined,
   };
+}
+
+async function attachRuntimeToAgentSupabase(params: {
+  agentId: string;
+  sessionKey: string;
+  sessionId: string;
+}) {
+  const supabase = getSupabaseAdminClient();
+
+  const { error } = await supabase
+    .from("agents")
+    .update({
+      status: "active",
+      runtime_session_key: params.sessionKey,
+      runtime_session_id: params.sessionId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", params.agentId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return getAgentDraftByIdSupabase(params.agentId);
 }
 
 export async function createAgentDraft(
@@ -243,4 +295,16 @@ export async function getAgentDraftById(id: string) {
   }
 
   return getAgentDraftByIdFile(id);
+}
+
+export async function attachRuntimeToAgent(params: {
+  agentId: string;
+  sessionKey: string;
+  sessionId: string;
+}) {
+  if (isSupabaseConfigured()) {
+    return attachRuntimeToAgentSupabase(params);
+  }
+
+  return attachRuntimeToAgentFile(params);
 }
