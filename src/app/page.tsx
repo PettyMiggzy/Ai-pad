@@ -1,4 +1,5 @@
 import { CreateAgentForm } from "@/components/agents/create-agent-form";
+import { isStripeConfigured } from "@/lib/billing/stripe";
 import { isSupabaseConfigured } from "@/lib/db/server";
 
 async function getAgentDrafts() {
@@ -22,6 +23,7 @@ async function getAgentDrafts() {
 export default async function Home() {
   const agents = await getAgentDrafts();
   const supabaseReady = isSupabaseConfigured();
+  const stripeReady = isStripeConfigured();
 
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100">
@@ -32,9 +34,9 @@ export default async function Home() {
             Artemis Tier 1 control panel
           </h1>
           <p className="max-w-3xl text-lg text-zinc-300">
-            The first browser-side flow is live. You can now create Artemis drafts
-            from the UI while we keep building persistence, billing, and OpenClaw
-            provisioning.
+            The first browser-side flow is live. You can now create Artemis drafts,
+            price them, and prep checkout while we keep building persistence,
+            billing, and OpenClaw provisioning.
           </p>
         </div>
 
@@ -57,9 +59,17 @@ export default async function Home() {
             </div>
 
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+              <p className="font-medium">Billing mode</p>
+              <p className="mt-2 text-sm text-zinc-300">
+                {stripeReady ? "Stripe configured" : "Mock checkout mode"}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
               <p className="font-medium">API routes</p>
               <code className="mt-2 block text-sm text-zinc-300">GET /api/agents</code>
               <code className="mt-1 block text-sm text-zinc-300">POST /api/agents</code>
+              <code className="mt-1 block text-sm text-zinc-300">POST /api/billing/checkout</code>
             </div>
           </div>
         </div>

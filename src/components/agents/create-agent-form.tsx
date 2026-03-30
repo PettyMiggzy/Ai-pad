@@ -11,6 +11,22 @@ type CreateAgentResponse = {
     purpose: string;
     status: string;
     createdAt: string;
+    billing?: {
+      initialBucketTopupCents: number;
+    };
+  };
+};
+
+type CheckoutResponse = {
+  ok?: boolean;
+  mode?: "mock" | "stripe";
+  message?: string;
+  checkoutUrl?: string;
+  pricing?: {
+    creationFeeCents: number;
+    firstMonthCents: number;
+    initialBucketTopupCents: number;
+    totalCents: number;
   };
 };
 
@@ -30,11 +46,13 @@ export function CreateAgentForm() {
   const [form, setForm] = useState(initialState);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CreateAgentResponse | null>(null);
+  const [checkout, setCheckout] = useState<CheckoutResponse | null>(null);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setResult(null);
+    setCheckout(null);
 
     try {
       const res = await fetch("/api/agents", {
@@ -77,7 +95,22 @@ export function CreateAgentForm() {
       const data = (await res.json()) as CreateAgentResponse;
       setResult(data);
 
-      if (data.ok) {
+      if (data.ok && data.agent) {
+        const checkoutRes = await fetch("/api/billing/checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            agentId: data.agent.id,
+            name: data.agent.name,
+            initialBucketTopupCents: form.initialBucketTopupCents,
+          }),
+        });
+
+        const checkoutData = (await checkoutRes.json()) as CheckoutResponse;
+        setCheckout(checkoutData);
+
         setForm(initialState);
       }
     } catch {
@@ -212,6 +245,30 @@ export function CreateAgentForm() {
       {result?.ok && result.agent ? (
         <div className="rounded-xl border border-emerald-900 bg-emerald-950/40 p-3 text-sm text-emerald-300">
           Draft created: <span className="font-medium">{result.agent.name}</span>
+        </div>
+      ) : null}
+
+      {checkout?.pricing ? (
+        <div className="rounded-xl border border-zinc-700 bg-zinc-950 p-4 text-sm text-zinc-300">
+          <p className="font-medium text-zinc-100">Checkout summary</p>
+          <ul className="mt-2 space-y-1">
+            <li>Creation fee: ${(checkout.pricing.creationFeeCents / 100).toFixed(2)}</li>
+            <li>First month: ${(checkout.pricing.firstMonthCents / 100).toFixed(2)}</li>
+            <li>Bucket top-up: ${(checkout.pricing.initialBucketTopupCents / 100).toFixed(2)}</li>
+            <li className="font-medium">Total: ${(checkout.pricing.totalCents / 100).toFixed(2)}</li>
+          </ul>
+          {checkout.mode === "stripe" && checkout.checkoutUrl ? (
+            <a
+              href={checkout.checkoutUrl}
+              className="mt-3 inline-flex rounded-xl bg-white px-4 py-2 font-medium text-black"
+            >
+              Open Stripe checkout
+            </a>
+          ) : (
+            <p className="mt-3 text-zinc-400">
+              Stripe isn&apos;t configured yet, so this is running in mock checkout mode.
+            </p>
+          )}
         </div>
       ) : null}
     </form>
