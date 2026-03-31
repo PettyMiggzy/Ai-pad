@@ -8,7 +8,6 @@ type RuntimeStatusResponse = {
   mode?: "mock" | "openclaw";
   connected?: boolean;
   status?: string;
-  sessionKey?: string;
 };
 
 type LifecycleResponse = {
@@ -32,20 +31,15 @@ export function RuntimeStatusCard({
   async function checkStatus() {
     setLoading(true);
     setResult(null);
-
     try {
       const res = await fetch("/api/runtime/status", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ agentId }),
       });
-
-      const data = (await res.json()) as RuntimeStatusResponse;
-      setResult(data);
+      setResult(await res.json());
     } catch {
-      setResult({ error: "Failed to load runtime status." });
+      setResult({ error: "Failed to load status." });
     } finally {
       setLoading(false);
     }
@@ -54,84 +48,79 @@ export function RuntimeStatusCard({
   async function runLifecycle(action: "pause" | "resume") {
     setLoading(true);
     setLifecycle(null);
-
     try {
       const res = await fetch(`/api/runtime/${action}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ agentId }),
       });
-
-      const data = (await res.json()) as LifecycleResponse;
-      setLifecycle(data);
+      setLifecycle(await res.json());
     } catch {
-      setLifecycle({ error: `Failed to ${action} runtime.` });
+      setLifecycle({ error: `Failed to ${action}.` });
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-      <h2 className="text-lg font-semibold">Runtime</h2>
-      <ul className="mt-3 space-y-2 text-sm text-zinc-300">
-        <li>Session key: {sessionKey ?? "Not provisioned yet"}</li>
-      </ul>
+    <section className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+      <h2 className="text-lg font-semibold text-white mb-3">Runtime</h2>
+      <div className="text-sm text-zinc-400 mb-4">
+        <span className="text-zinc-500">Session:</span>{" "}
+        <span className="text-zinc-300 font-mono text-xs">
+          {sessionKey ?? "Not provisioned"}
+        </span>
+      </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         <button
-          type="button"
           onClick={checkStatus}
           disabled={loading || !sessionKey}
-          className="rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-100 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg border border-zinc-700 px-4 py-2 text-xs font-semibold text-zinc-300 transition hover:border-zinc-500 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {loading ? "Working..." : "Check status"}
+          {loading ? "..." : "Check Status"}
         </button>
         <button
-          type="button"
           onClick={() => runLifecycle("pause")}
           disabled={loading || !sessionKey}
-          className="rounded-xl border border-amber-700 px-4 py-2 text-sm text-amber-200 transition hover:bg-amber-950/40 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg border border-amber-700/40 px-4 py-2 text-xs font-semibold text-amber-400 transition hover:bg-amber-500/10 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Pause
         </button>
         <button
-          type="button"
           onClick={() => runLifecycle("resume")}
           disabled={loading || !sessionKey}
-          className="rounded-xl border border-emerald-700 px-4 py-2 text-sm text-emerald-200 transition hover:bg-emerald-950/40 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg border border-green-700/40 px-4 py-2 text-xs font-semibold text-green-400 transition hover:bg-green-500/10 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Resume
         </button>
       </div>
 
-      {result?.error ? (
-        <div className="mt-4 rounded-xl border border-red-900 bg-red-950/40 p-3 text-sm text-red-300">
+      {result?.error && (
+        <div className="mt-3 rounded-xl border border-red-900/40 bg-red-950/30 p-3 text-xs text-red-300">
           {result.error}
         </div>
-      ) : null}
+      )}
 
-      {result?.ok ? (
-        <div className="mt-4 rounded-xl border border-sky-900 bg-sky-950/40 p-3 text-sm text-sky-300">
-          <p>Mode: {result.mode}</p>
-          <p>Connected: {result.connected ? "Yes" : "No"}</p>
-          <p>Status: {result.status}</p>
+      {result?.ok && (
+        <div className="mt-3 rounded-xl border border-blue-500/20 bg-blue-950/20 p-3 text-xs text-blue-300 space-y-1">
+          <div>Mode: {result.mode}</div>
+          <div>Connected: {result.connected ? "Yes" : "No"}</div>
+          <div>Status: {result.status}</div>
         </div>
-      ) : null}
+      )}
 
-      {lifecycle?.error ? (
-        <div className="mt-4 rounded-xl border border-red-900 bg-red-950/40 p-3 text-sm text-red-300">
+      {lifecycle?.error && (
+        <div className="mt-3 rounded-xl border border-red-900/40 bg-red-950/30 p-3 text-xs text-red-300">
           {lifecycle.error}
         </div>
-      ) : null}
+      )}
 
-      {lifecycle?.ok ? (
-        <div className="mt-4 rounded-xl border border-emerald-900 bg-emerald-950/40 p-3 text-sm text-emerald-300">
-          Runtime {lifecycle.action} command sent ({lifecycle.mode} mode).
+      {lifecycle?.ok && (
+        <div className="mt-3 rounded-xl border border-green-500/20 bg-green-950/20 p-3 text-xs text-green-300">
+          Runtime {lifecycle.action} sent ({lifecycle.mode}).
         </div>
-      ) : null}
+      )}
     </section>
   );
 }

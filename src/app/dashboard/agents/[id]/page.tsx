@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { Nav } from "@/components/ui/nav";
 import { RuntimeStatusCard } from "@/components/agents/runtime-status-card";
 import { getAgentDraftById } from "@/lib/db/agents";
 import { listRunsForAgent } from "@/lib/db/runs";
@@ -20,99 +21,123 @@ export default async function AgentDetailPage({
   const runs = await listRunsForAgent(agent.id);
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100">
-      <div className="mx-auto max-w-5xl space-y-8">
-        <div className="flex items-start justify-between gap-4">
+    <>
+      <Nav />
+      <main className="mx-auto max-w-5xl px-6 py-12">
+        <div className="flex items-start justify-between gap-4 mb-8">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-zinc-400">Agent detail</p>
-            <h1 className="mt-2 text-4xl font-semibold tracking-tight">{agent.name}</h1>
-            <p className="mt-2 max-w-2xl text-zinc-400">{agent.purpose}</p>
+            <Link href="/dashboard" className="text-sm text-zinc-500 hover:text-zinc-300 transition">
+              ← Dashboard
+            </Link>
+            <h1 className="mt-2 text-3xl font-bold text-white">{agent.name}</h1>
+            <p className="mt-1 max-w-2xl text-zinc-400">{agent.purpose}</p>
           </div>
-          <Link
-            href="/dashboard"
-            className="rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-200 transition hover:bg-zinc-900"
+          <span
+            className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold ${
+              agent.status === "active"
+                ? "bg-green-500/10 text-green-400 border border-green-500/20"
+                : "bg-zinc-800 text-zinc-400"
+            }`}
           >
-            Back to dashboard
-          </Link>
+            {agent.status}
+          </span>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <p className="text-sm uppercase tracking-[0.2em] text-zinc-500">Status</p>
-            <p className="mt-2 text-2xl font-semibold">{agent.status}</p>
+        {/* Stats row */}
+        <div className="grid gap-4 sm:grid-cols-4 mb-8">
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+            <div className="text-xs uppercase tracking-wider text-zinc-500">Status</div>
+            <div className="mt-2 text-2xl font-bold text-white">{agent.status}</div>
           </div>
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <p className="text-sm uppercase tracking-[0.2em] text-zinc-500">Template</p>
-            <p className="mt-2 text-2xl font-semibold">{agent.templateName}</p>
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+            <div className="text-xs uppercase tracking-wider text-zinc-500">Template</div>
+            <div className="mt-2 text-2xl font-bold text-blue-400">{agent.templateName}</div>
           </div>
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <p className="text-sm uppercase tracking-[0.2em] text-zinc-500">Created</p>
-            <p className="mt-2 text-sm text-zinc-300">{agent.createdAt}</p>
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+            <div className="text-xs uppercase tracking-wider text-zinc-500">Total Runs</div>
+            <div className="mt-2 text-2xl font-bold text-white">{runs.length}</div>
           </div>
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <p className="text-sm uppercase tracking-[0.2em] text-zinc-500">Runs</p>
-            <p className="mt-2 text-2xl font-semibold">{runs.length}</p>
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+            <div className="text-xs uppercase tracking-wider text-zinc-500">Created</div>
+            <div className="mt-2 text-sm text-zinc-300">{agent.createdAt}</div>
           </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           <RuntimeStatusCard agentId={agent.id} sessionKey={agent.runtimeSessionKey} />
 
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <h2 className="text-lg font-semibold">Persona</h2>
-            <ul className="mt-3 space-y-2 text-sm text-zinc-300">
-              <li>Tone: {agent.persona.tone}</li>
-              <li>Style: {agent.persona.style}</li>
-              <li>Proactivity: {agent.persona.proactivity}</li>
-            </ul>
-          </section>
-
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <h2 className="text-lg font-semibold">Memory</h2>
-            <ul className="mt-3 space-y-2 text-sm text-zinc-300">
-              <li>Mode: {agent.memory.mode}</li>
-              <li>
-                Allow group memory: {agent.memory.allowGroupMemory ? "Yes" : "No"}
-              </li>
-            </ul>
-          </section>
-
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <h2 className="text-lg font-semibold">Channels</h2>
-            <ul className="mt-3 space-y-2 text-sm text-zinc-300">
-              {agent.channels.map((channel, index) => (
-                <li key={`${channel.type}-${index}`}>
-                  {channel.type} · {channel.enabled ? "enabled" : "disabled"}
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <h2 className="text-lg font-semibold">Recent runs</h2>
-            <div className="mt-3 space-y-2 text-sm text-zinc-300">
-              {runs.length === 0 ? (
-                <p>No runs yet.</p>
-              ) : (
-                runs.slice(0, 5).map((run) => (
-                  <div key={run.id} className="rounded-xl border border-zinc-800 p-3">
-                    <p>{run.triggerType}</p>
-                    <p className="text-zinc-400">{run.status}</p>
-                    <p className="text-zinc-500">${(run.costCents / 100).toFixed(2)}</p>
-                  </div>
-                ))
-              )}
+          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+            <h2 className="text-lg font-semibold text-white mb-3">Configuration</h2>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Tone</span>
+                <span className="text-white">{agent.persona.tone}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Style</span>
+                <span className="text-white">{agent.persona.style}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Memory</span>
+                <span className="text-white">{agent.memory.mode}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Channels</span>
+                <span className="text-white">{agent.channels.map((c) => c.type).join(", ")}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Tools</span>
+                <span className="text-white">{agent.tools.length > 0 ? agent.tools.join(", ") : "None"}</span>
+              </div>
             </div>
           </section>
-        </div>
 
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-          <h2 className="text-lg font-semibold">System prompt</h2>
-          <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-sm text-zinc-300">
-            {agent.systemPrompt}
-          </pre>
-        </section>
-      </div>
-    </main>
+          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 md:col-span-2">
+            <h2 className="text-lg font-semibold text-white mb-3">Recent Runs</h2>
+            {runs.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-zinc-800 p-6 text-center text-zinc-500">
+                No runs yet. Fire a trigger to see execution history.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {runs.slice(0, 10).map((run) => (
+                  <div
+                    key={run.id}
+                    className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-950 p-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`h-2 w-2 rounded-full ${
+                          run.status === "delivered"
+                            ? "bg-green-500"
+                            : run.status === "failed"
+                              ? "bg-red-500"
+                              : run.status === "running"
+                                ? "bg-blue-500"
+                                : "bg-zinc-500"
+                        }`}
+                      />
+                      <span className="text-sm text-white">{run.triggerType}</span>
+                      <span className="text-xs text-zinc-500">{run.status}</span>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-zinc-500">
+                      <span>${(run.costCents / 100).toFixed(2)}</span>
+                      <span>{run.startedAt}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 md:col-span-2">
+            <h2 className="text-lg font-semibold text-white mb-3">System Prompt</h2>
+            <pre className="overflow-x-auto whitespace-pre-wrap text-sm text-zinc-400 leading-relaxed">
+              {agent.systemPrompt}
+            </pre>
+          </section>
+        </div>
+      </main>
+    </>
   );
 }

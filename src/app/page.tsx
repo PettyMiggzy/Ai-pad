@@ -1,134 +1,236 @@
 import Link from "next/link";
+import { Nav } from "@/components/ui/nav";
+import { Footer } from "@/components/ui/footer";
 
-import { CreateAgentForm } from "@/components/agents/create-agent-form";
-import { isStripeConfigured } from "@/lib/billing/stripe";
-import { isSupabaseConfigured } from "@/lib/db/server";
+const FEATURES = [
+  {
+    icon: "🎯",
+    title: "Trigger-Based",
+    desc: "Agents run on your schedule — every 15 min, hourly, daily, on webhook, or manual. No wasted compute.",
+  },
+  {
+    icon: "🤖",
+    title: "Powered by Artemis",
+    desc: "Our custom AI model runs every mission. Claude supervises for quality. You get both, we handle everything.",
+  },
+  {
+    icon: "💰",
+    title: "Prepaid Buckets",
+    desc: "Load credits, agents deduct per run. When the bucket's empty, agents pause. No surprise bills.",
+  },
+  {
+    icon: "📡",
+    title: "Multi-Channel",
+    desc: "Deliver results via Telegram, Discord, Slack, WhatsApp, SMS, or Voice. Connect what you use.",
+  },
+  {
+    icon: "🔧",
+    title: "No Code Required",
+    desc: "Describe the mission in plain English. Pick a trigger. Choose a channel. Done.",
+  },
+  {
+    icon: "⚡",
+    title: "Instant Deploy",
+    desc: "Agents go live in seconds. Redeploy with a new mission anytime for $5.",
+  },
+];
 
-async function getAgentDrafts() {
-  try {
-    const res = await fetch("http://localhost:3000/api/agents", {
-      cache: "no-store",
-    });
+const PRICING_TIERS = [
+  {
+    name: "Free Trial",
+    price: "Free",
+    sub: "1 agent · ~2,000 tokens",
+    features: ["One agent", "Manual triggers only", "Web chat channel", "Basic missions"],
+    cta: "Start Free",
+    highlight: false,
+  },
+  {
+    name: "Standard",
+    price: "$20",
+    sub: "/month per agent",
+    features: [
+      "Unlimited triggers",
+      "All free channels",
+      "Prepaid usage bucket",
+      "Run history & logs",
+      "Mission redeployment ($5)",
+    ],
+    cta: "Get Started",
+    highlight: true,
+  },
+  {
+    name: "Pro Add-ons",
+    price: "+$10",
+    sub: "/month each",
+    features: ["SMS via Twilio", "Voice via ElevenLabs", "Priority execution", "Webhook triggers"],
+    cta: "Add to Agent",
+    highlight: false,
+  },
+];
 
-    if (!res.ok) return [];
-
-    const data = (await res.json()) as {
-      agents?: Array<{ id: string; name: string; purpose: string; createdAt: string }>;
-    };
-
-    return data.agents ?? [];
-  } catch {
-    return [];
-  }
+function HeroSection() {
+  return (
+    <section className="relative overflow-hidden px-6 py-24 text-center sm:py-32">
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-950/20 via-transparent to-transparent" />
+      <div className="relative mx-auto max-w-3xl space-y-6">
+        <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-1.5 text-sm text-blue-400">
+          <span>⚡</span>
+          <span>Powered by Artemis AI</span>
+        </div>
+        <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl">
+          AI Agents That
+          <span className="block text-blue-500">Work on Command</span>
+        </h1>
+        <p className="mx-auto max-w-xl text-lg text-zinc-400">
+          Create trigger-based AI agents in minutes. No code, no API keys, no
+          infrastructure. Just describe the mission and let Artemis handle it.
+        </p>
+        <div className="flex items-center justify-center gap-4">
+          <Link
+            href="/dashboard/agents/new"
+            className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-500"
+          >
+            Create Your First Agent
+          </Link>
+          <Link
+            href="/pricing"
+            className="rounded-lg border border-zinc-700 px-6 py-3 font-semibold text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+          >
+            View Pricing
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
 }
 
-export default async function Home() {
-  const agents = await getAgentDrafts();
-  const supabaseReady = isSupabaseConfigured();
-  const stripeReady = isStripeConfigured();
-  const openClawReady = Boolean(process.env.OPENCLAW_GATEWAY_URL);
+function FeaturesSection() {
+  return (
+    <section className="mx-auto max-w-6xl px-6 py-20">
+      <div className="mb-12 text-center">
+        <h2 className="text-3xl font-bold text-white">How MIT Agents Works</h2>
+        <p className="mt-3 text-zinc-400">Everything you need to deploy AI workers. Nothing you don&apos;t.</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {FEATURES.map((f) => (
+          <div
+            key={f.title}
+            className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 transition hover:border-zinc-700"
+          >
+            <div className="mb-3 text-2xl">{f.icon}</div>
+            <h3 className="mb-2 text-lg font-semibold text-white">{f.title}</h3>
+            <p className="text-sm leading-relaxed text-zinc-400">{f.desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function HowItWorksSection() {
+  const steps = [
+    { n: "1", title: "Describe Your Mission", desc: "Tell us what you want the agent to do in plain English." },
+    { n: "2", title: "Set Your Trigger", desc: "Choose when the agent runs — on a schedule, webhook, or manually." },
+    { n: "3", title: "Pick Channels", desc: "Connect Telegram, Discord, Slack, WhatsApp, SMS, or Voice." },
+    { n: "4", title: "Go Live", desc: "Agent deploys instantly. Artemis executes, Claude validates, you get results." },
+  ];
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100">
-      <div className="mx-auto max-w-5xl space-y-8">
-        <div className="space-y-4">
-          <p className="text-sm uppercase tracking-[0.3em] text-zinc-400">MIT Agents</p>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            Artemis trigger-based control plane
-          </h1>
-          <p className="max-w-3xl text-lg text-zinc-300">
-            MIT Agents is now pivoting toward a trigger-based platform: create Artemis
-            agents, provision runtime sessions, and execute runs that consume prepaid
-            bucket balance.
-          </p>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <CreateAgentForm />
-
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-              <p className="text-sm uppercase tracking-[0.2em] text-zinc-500">
-                Agent count
-              </p>
-              <p className="mt-2 text-4xl font-semibold">{agents.length}</p>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-              <p className="font-medium">Storage mode</p>
-              <p className="mt-2 text-sm text-zinc-300">
-                {supabaseReady ? "Supabase configured" : "Local JSON fallback"}
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-              <p className="font-medium">Billing mode</p>
-              <p className="mt-2 text-sm text-zinc-300">
-                {stripeReady ? "Stripe configured" : "Mock checkout mode"}
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-              <p className="font-medium">Runtime mode</p>
-              <p className="mt-2 text-sm text-zinc-300">
-                {openClawReady ? "OpenClaw gateway connected" : "Mock provisioning mode"}
-              </p>
-              <p className="mt-2 text-xs text-zinc-500">Runtime profile: artemis-tier1</p>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-              <p className="font-medium">Quick links</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Link
-                  href="/dashboard"
-                  className="rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-200 transition hover:bg-zinc-800"
-                >
-                  Dashboard
-                </Link>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-              <p className="font-medium">API routes</p>
-              <code className="mt-2 block text-sm text-zinc-300">GET /api/agents</code>
-              <code className="mt-1 block text-sm text-zinc-300">POST /api/agents</code>
-              <code className="mt-1 block text-sm text-zinc-300">POST /api/billing/checkout</code>
-              <code className="mt-1 block text-sm text-zinc-300">POST /api/runtime/provision</code>
-              <code className="mt-1 block text-sm text-zinc-300">POST /api/runtime/message</code>
-              <code className="mt-1 block text-sm text-zinc-300">POST /api/runtime/status</code>
-              <code className="mt-1 block text-sm text-zinc-300">POST /api/runtime/pause</code>
-              <code className="mt-1 block text-sm text-zinc-300">POST /api/runtime/resume</code>
-              <code className="mt-1 block text-sm text-zinc-300">POST /api/runs/execute</code>
-            </div>
-          </div>
-        </div>
-
-        <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Recent agents</h2>
-          <div className="space-y-3">
-            {agents.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-zinc-800 p-5 text-zinc-400">
-                No agents yet. Create one from the form above.
-              </div>
-            ) : (
-              agents.map((agent) => (
-                <div
-                  key={agent.id}
-                  className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-lg font-medium">{agent.name}</p>
-                      <p className="mt-1 text-sm text-zinc-400">{agent.purpose}</p>
-                    </div>
-                    <p className="text-xs text-zinc-500">{agent.createdAt}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
+    <section className="mx-auto max-w-4xl px-6 py-20">
+      <div className="mb-12 text-center">
+        <h2 className="text-3xl font-bold text-white">Four Steps to Your First Agent</h2>
       </div>
-    </main>
+      <div className="grid gap-6 sm:grid-cols-2">
+        {steps.map((s) => (
+          <div key={s.n} className="flex gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-lg font-bold text-white">
+              {s.n}
+            </div>
+            <div>
+              <h3 className="mb-1 font-semibold text-white">{s.title}</h3>
+              <p className="text-sm text-zinc-400">{s.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PricingSection() {
+  return (
+    <section className="mx-auto max-w-5xl px-6 py-20" id="pricing">
+      <div className="mb-12 text-center">
+        <h2 className="text-3xl font-bold text-white">Simple Pricing</h2>
+        <p className="mt-3 text-zinc-400">No hidden fees. You control exactly what you spend.</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {PRICING_TIERS.map((tier) => (
+          <div
+            key={tier.name}
+            className={`rounded-2xl border p-6 ${
+              tier.highlight
+                ? "border-blue-500/40 bg-blue-950/20"
+                : "border-zinc-800 bg-zinc-900/50"
+            }`}
+          >
+            <h3 className="mb-1 text-lg font-semibold text-white">{tier.name}</h3>
+            <div className="mb-1">
+              <span className="text-3xl font-bold text-white">{tier.price}</span>
+              <span className="ml-1 text-sm text-zinc-400">{tier.sub}</span>
+            </div>
+            <ul className="mb-6 mt-4 space-y-2">
+              {tier.features.map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-zinc-300">
+                  <span className="mt-0.5 text-blue-500">✓</span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/dashboard/agents/new"
+              className={`block rounded-lg py-2.5 text-center text-sm font-semibold transition ${
+                tier.highlight
+                  ? "bg-blue-600 text-white hover:bg-blue-500"
+                  : "border border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white"
+              }`}
+            >
+              {tier.cta}
+            </Link>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CtaSection() {
+  return (
+    <section className="mx-auto max-w-3xl px-6 py-20 text-center">
+      <h2 className="text-3xl font-bold text-white">Ready to Deploy Your First Agent?</h2>
+      <p className="mt-3 text-zinc-400">
+        Start free. No credit card required. One agent, on us.
+      </p>
+      <Link
+        href="/dashboard/agents/new"
+        className="mt-6 inline-block rounded-lg bg-blue-600 px-8 py-3 font-semibold text-white transition hover:bg-blue-500"
+      >
+        Create Agent — Free
+      </Link>
+    </section>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <>
+      <Nav />
+      <HeroSection />
+      <FeaturesSection />
+      <HowItWorksSection />
+      <PricingSection />
+      <CtaSection />
+      <Footer />
+    </>
   );
 }
