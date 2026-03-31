@@ -1,4 +1,4 @@
-import { attachRuntimeToAgent, getAgentDraftById } from "@/lib/db/agents";
+import { attachRuntimeToAgent, getAgentDraftById, type StoredAgentDraft } from "@/lib/db/agents";
 import {
   buildArtemisRuntimeConfig,
   type ArtemisRuntimeConfig,
@@ -25,7 +25,7 @@ export async function provisionAgentRuntime(agentId: string): Promise<ProvisionA
     throw new Error("Agent not found");
   }
 
-  const runtime = buildArtemisRuntimeConfig(agent);
+  const runtime = buildArtemisRuntimeConfig(agent as StoredAgentDraft);
 
   if (!isOpenClawProvisioningConfigured()) {
     const mockResult: ProvisionAgentResult = {
